@@ -1,0 +1,6 @@
+fs
+pydub
+mutagen
+
+Windows:
+pywin32
