@@ -1,5 +1,5 @@
 from statistics import mean
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 def silu_andmed(a,n):
     fail=open(a)
     f=fail.readlines()
@@ -19,7 +19,7 @@ def silu_andmed(a,n):
             keskmine=[mean(kesk)]
             kesk2.append(keskmine)
     fail.close()
-#    plt.plot(c)
-#    plt.plot(kesk2)
-#    plt.ylabel(kesk2)
-#   plt.show()
+plt.plot(c)
+plt.plot(kesk2)
+plt.ylabel(kesk2)
+plt.show()

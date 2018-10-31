@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 from datetime import datetime
 
 def fill0(t):
@@ -14,6 +15,9 @@ def msToHMS(ms):
 
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
+    
+def play(audio_file_path):
+    subprocess.call(["ffplay", "-volume", "7", "-showmode", "1", "-autoexit", audio_file_path])
     
 def metric_prefix(value):
     prefixes = ('', 'k', 'M', 'G', 'T', 'P')
