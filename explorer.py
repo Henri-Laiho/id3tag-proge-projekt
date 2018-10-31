@@ -36,9 +36,9 @@ def bell():
     if bell_on:
         print('\a')
 
-# loob kirje failide nimekirja lisamiseks; määramata väärtustele paneb väärtuseks '?'
+# loob kirje failide nimekirja lisamiseks; määramata väärtustele paneb väärtuseks ''
 def list_entry(**data):
-    return tuple([data.get(y, '?') for x, y in columns.items()])
+    return tuple([data.get(y, '') for x, y in columns.items()])
 
 def pgup():
     global cursor_line, view_position
