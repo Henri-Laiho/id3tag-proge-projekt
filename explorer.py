@@ -2,8 +2,10 @@ from lisad import *
 from sys import argv
 from prefilled_input import prefilled_input
 from getch import getch # 1 täht korraga lugemine
-import fs
 from fs import open_fs
+
+import fs
+import eyed3
 
 columns = { 0:'Directory', 1:'Name', 2:'Size', 3:'Modified', 4:'Created', 5:'Sample Rate', 6:'Bit Rate',
             7:'Channels', 8:'Duration', 9:'Title', 10:'Artist', 11:'Album', 12:'Album Artist',
@@ -34,9 +36,9 @@ def bell():
     if bell_on:
         print('\a')
 
-# loob kirje failide nimekirja lisamiseks; määramata väärtustele paneb väärtuseks ''
+# loob kirje failide nimekirja lisamiseks; määramata väärtustele paneb väärtuseks '?'
 def list_entry(**data):
-    return tuple([data.get(y, '') for x, y in columns.items()])
+    return tuple([data.get(y, '?') for x, y in columns.items()])
 
 def pgup():
     global cursor_line, view_position
@@ -108,12 +110,13 @@ def enter():
             view_position = 0
     
 while True:
-    cls()
+    cls() # tühjendab ekraani
     if message != '':
-        print(message)
+        print(message, end='')
         message = ''
     print(path_prefix + current_dir)
     
+    # pealkirjad
     print(('  ' if cursor_column == 0 else '') + '    ', end='')
     for col in columns_visible[1:]:
         print(('  ' if cursor_column == col else '') +
@@ -123,6 +126,7 @@ while True:
             ' '*(column_sizes[col] - len(columns[col]) + 1), end='')
     print()
     
+    # andmete uuendamine
     if last_dir != current_dir:
         try:
             dir = [list_entry(Directory=('DIR' if file.is_dir else 'F  '),
@@ -132,7 +136,7 @@ while True:
                               Created=datetimeToStr(file.created)
                               ) for file in home_fs.scandir(current_dir, namespaces=['details'])]
         except (PermissionError, fs.errors.DirectoryExpected):
-            message = 'Access denied.'
+            message += 'Access denied.\n'
             current_dir = current_dir[:current_dir[:-1].rfind('/') + 1]
             if current_dir == '':
                     current_dir = '/'
@@ -140,12 +144,13 @@ while True:
             
         
         if sorted_by < 2:
-            dir.sort(key=lambda x: (x[0], x[1]))
+            dir.sort(key=lambda x: (x[0], x[1].lower()))
         else:
-            dir.sort(key=lambda x: x[sorted_by])
+            dir.sort(key=lambda x: x[sorted_by].lower())
         dir.insert(0, list_entry(Directory='DIR', Name='..'))
     
-    for i in range(view_position, min(view_position + view_lines, len(dir))):
+    # ekraanil nähtavad read
+    for i in range(view_position, min(view_position + view_lines, len(dir))):4
         for col in columns_visible:
             print(((('> \33[6m' if editing else '> ') if cursor_line == i else '  ') if cursor_column == col else '') +
                   (dir[i][col] if len(dir[i][col]) < column_sizes[col] + 1 else dir[i][col][:column_sizes[col]-3]) +
@@ -154,6 +159,7 @@ while True:
                   ' '*(column_sizes[col] - len(dir[i][col]) + 1), end='')
         print()
     
+    # sisend
     ch = getch()
     special_ch = ch == b'\xe0'
     if special_ch:
@@ -182,8 +188,8 @@ while True:
             pgup()
         elif special_ch and ch == b'Q':
             pgdown()
-        elif ch == b'\x1b':
-            pass #esc
+        elif ch == b'\x1b': # esc
+            pass
         elif ch == b'\x08': # backspace
             current_dir = current_dir[:current_dir[:-1].rfind('/') + 1]
             if current_dir == '':
@@ -200,40 +206,31 @@ while True:
 
 
 
-from pynput import keyboard
+#from pynput import keyboard
 
 # The key combination to check
-COMBINATIONS = [
-    #{keyboard.Key.shift, keyboard.KeyCode(char='a')},
-    {keyboard.Key.enter}
-]
+#COMBINATIONS = [
+#    {keyboard.Key.enter}
+#]
 
 # The currently active modifiers
-current = set()
-
-def execute(combination):
-    print ("Do Something")
-
-def on_press(key):
-    if any([key in COMBO for COMBO in COMBINATIONS]):
-        current.add(key)
-        if any(all(k in current for k in COMBO) for COMBO in COMBINATIONS):
-            execute(COMBO)
-
-def on_release(key):
-    if any([key in COMBO for COMBO in COMBINATIONS]):
-        current.remove(key)
+#current = set()
+#
+#def execute(combination):
+#    print ("Do Something")
+#
+#def on_press(key):
+#    if any([key in COMBO for COMBO in COMBINATIONS]):
+#        current.add(key)
+#        if any(all(k in current for k in COMBO) for COMBO in COMBINATIONS):
+#            execute(COMBO)
+#
+#def on_release(key):
+#    if any([key in COMBO for COMBO in COMBINATIONS]):
+#        current.remove(key)
 
 
 #with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
 #    listener.join()
 
 
-
-
-
-
-
-##from pydub import AudioSegment
-#from splitter import extract_mp3_segment, hmsToMS
-#extract_mp3_segment("36.mp3", hmsToMS('00:00:10'), hmsToMS('00:02:00'))

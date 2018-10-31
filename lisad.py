@@ -18,9 +18,9 @@ import os, re
 def get_drives():
     return [drive[:-1] for drive in re.findall(r"[A-Z]+:.*$",os.popen("mountvol /").read(),re.MULTILINE)]
 
-def progressBar(value, endvalue, bar_length=20):
-        percent = float(value) / endvalue
-        arrow = '-' * int(round(percent * bar_length)-1) + '>'
-        spaces = ' ' * (bar_length - len(arrow))
-
-        print("\rPercent: [{0}] {1}%".format(arrow + spaces, int(round(percent * 100))), end='')
+#def progressBar(value, endvalue, bar_length=20):
+#        percent = float(value) / endvalue
+#        arrow = '-' * int(round(percent * bar_length)-1) + '>'
+#        spaces = ' ' * (bar_length - len(arrow))
+#
+#        print("\rPercent: [{0}] {1}%".format(arrow + spaces, int(round(percent * 100))), end='')

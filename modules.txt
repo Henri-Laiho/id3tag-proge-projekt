@@ -1,6 +1,6 @@
 fs
 pydub
-eye3D
+eyed3
 
 Windows:
 pywin32
