@@ -1,0 +1,6 @@
+fs
+pydub
+eye3D
+
+Windows:
+pywin32
