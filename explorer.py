@@ -6,7 +6,11 @@ from fs import open_fs
 
 import os
 import fs
+<<<<<<< HEAD
 import mutagen
+=======
+#import eyed3
+>>>>>>> b180db0ecc6f9a815f986c697aff14eb9c662ccd
 
 columns = { 0:'Directory', 1:'Name', 2:'Size', 3:'Modified', 4:'Created', 5:'Sample Rate', 6:'Bit Rate',
             7:'Channels', 8:'Duration', 9:'Title', 10:'Artist', 11:'Album', 12:'Album Artist',
@@ -40,7 +44,11 @@ def bell():
 
 # loob kirje failide nimekirja lisamiseks; määramata väärtustele paneb väärtuseks ''
 def list_entry(**data):
+<<<<<<< HEAD
     return [data.get(y, '') for x, y in columns.items()]
+=======
+    return tuple([data.get(y, '') for x, y in columns.items()])
+>>>>>>> b180db0ecc6f9a815f986c697aff14eb9c662ccd
 
 def pgup():
     global cursor_line, view_position
