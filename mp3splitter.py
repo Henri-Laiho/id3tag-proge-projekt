@@ -3,16 +3,7 @@ import sys
 from pydub import AudioSegment
 from time import time
 from subprocess import call
-
-def fill0(t):
-    return '0' + str(t) if t < 10 else str(t)
-
-def hmsToMS(hms):
-    s = hms.split(':')
-    return int(s[0]) * 3600000 + int(s[1]) * 60000 + int(s[2]) * 1000
-
-def msToHMS(ms):
-    return fill0(ms//3600000) + ':' + fill0((ms//60000) % 60) + ':' + fill0((ms//1000) % 60)
+from lisad import *
 
 def getFileDurationMS(file):
     return AudioSegment.from_mp3(file).duration_seconds * 1000
@@ -59,5 +50,6 @@ def delete_mp3_segment(file, start, end):
     elif start == 0 and (end == -1 or end >= dur):
         return extract_mp3_segment(file)
     return file
+
 
 

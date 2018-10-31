@@ -1,6 +1,6 @@
 fs
 pydub
-eyed3
+mutagen
 
 Windows:
 pywin32

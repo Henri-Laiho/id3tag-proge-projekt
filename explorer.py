@@ -4,41 +4,43 @@ from prefilled_input import prefilled_input
 from getch import getch # 1 täht korraga lugemine
 from fs import open_fs
 
+import os
 import fs
-import eyed3
+import mutagen
 
 columns = { 0:'Directory', 1:'Name', 2:'Size', 3:'Modified', 4:'Created', 5:'Sample Rate', 6:'Bit Rate',
             7:'Channels', 8:'Duration', 9:'Title', 10:'Artist', 11:'Album', 12:'Album Artist',
             13:'Contributing Artists', 14:'Track Number', 15:'Year', 16:'Genre', 17:'Composer', 18:'Writer',
             19:'Key', 20:'BPM' }
-column_sizes = [3, 24, 8, 16, 16, 8, 9, 7, 9, 8, 8, 8, 8, 8, 4, 4, 10, 8, 8, 3, 4]
+column_sizes = [3, 24, 10, 16, 16, 11, 11, 8, 9, 8, 8, 8, 8, 8, 4, 4, 10, 8, 8, 3, 4]
 
 drives = get_drives()
 b_drives = [drive[0].encode() for drive in drives]
 
-columns_visible = [0, 1, 2, 3, 4]
+columns_visible = [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
 sorted_by = 1
 view_lines = 32
 cursor_line = 0
 cursor_column = 0
 view_position = 0
 editing = False
-current_dir = '/'
+current_dir = os.getcwd().replace('\\', '/') + '/'
 last_dir = ''
-path_prefix = '<home>'
+path_prefix = current_dir[0] + ':/'
+current_dir = current_dir[2:]
 message = ''
 dir = []
 
-home_fs = open_fs('.')
+home_fs = open_fs(path_prefix)
 
 bell_on = True
 def bell():
     if bell_on:
         print('\a')
 
-# loob kirje failide nimekirja lisamiseks; määramata väärtustele paneb väärtuseks '?'
+# loob kirje failide nimekirja lisamiseks; määramata väärtustele paneb väärtuseks ''
 def list_entry(**data):
-    return tuple([data.get(y, '?') for x, y in columns.items()])
+    return [data.get(y, '') for x, y in columns.items()]
 
 def pgup():
     global cursor_line, view_position
@@ -96,7 +98,7 @@ def enter():
         
         
         
-        
+        saveInfo()
         editing = False
     else:
         if dir[cursor_line][0] == 'DIR':
@@ -135,6 +137,27 @@ while True:
                               Modified=datetimeToStr(file.modified),
                               Created=datetimeToStr(file.created)
                               ) for file in home_fs.scandir(current_dir, namespaces=['details'])]
+            for i in range(len(dir)):
+                file = dir[i]
+                if file[0] != 'DIR':
+                    audio = mutagen.File(path_prefix + current_dir + file[1])
+                    if audio != None:
+                        if audio.info.bitrate: file[6] = metric_prefix(audio.info.bitrate) + 'bps'
+                        if audio.info.length: file[8] = durationToStr(audio.info.length)
+                        if 'title' in audio: file[9] = audio['title']
+                        if 'artist' in audio: file[10] = audio['artist']
+                        if 'album' in audio: file[11] = audio['album']
+                        if 'albumartist' in audio: file[12] = audio['albumartist']
+                        if 'contributingartists' in audio: file[13] = audio['contributingartists']
+                        if 'tracknumber' in audio: file[14] = audio['tracknumber']
+                        if 'date' in audio: file[15] = audio['date']
+                        if 'genre' in audio: file[16] = audio['genre']
+                        if 'composer' in audio: file[17] = audio['composer']
+                        if 'writer' in audio: file[18] = audio['writer']
+                        if 'key' in audio: file[19] = audio['key']
+                        if 'bpm' in audio: file[20] = audio['bpm']
+                        
+                
         except (PermissionError, fs.errors.DirectoryExpected):
             message += 'Access denied.\n'
             current_dir = current_dir[:current_dir[:-1].rfind('/') + 1]
@@ -149,12 +172,13 @@ while True:
             dir.sort(key=lambda x: x[sorted_by].lower())
         dir.insert(0, list_entry(Directory='DIR', Name='..'))
     
+    last_dir = current_dir
     # ekraanil nähtavad read
-    for i in range(view_position, min(view_position + view_lines, len(dir))):4
+    for i in range(view_position, min(view_position + view_lines, len(dir))):
         for col in columns_visible:
             print(((('> \33[6m' if editing else '> ') if cursor_line == i else '  ') if cursor_column == col else '') +
                   (dir[i][col] if len(dir[i][col]) < column_sizes[col] + 1 else dir[i][col][:column_sizes[col]-3]) +
-                  ('... ' if len(dir[i][col])-1 > column_sizes[col] else '' ) +
+                  ('... ' if len(dir[i][col]) > column_sizes[col] else '' ) +
                   ('\33[0m' if editing and cursor_line == i and cursor_column == col else '') + # värvimuutus tagasi
                   ' '*(column_sizes[col] - len(dir[i][col]) + 1), end='')
         print()
@@ -232,5 +256,6 @@ while True:
 
 #with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
 #    listener.join()
+
 
 
