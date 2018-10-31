@@ -5,7 +5,7 @@ from getch import getch # 1 täht korraga lugemine
 from fs import open_fs
 
 import fs
-import eyed3
+#import eyed3
 
 columns = { 0:'Directory', 1:'Name', 2:'Size', 3:'Modified', 4:'Created', 5:'Sample Rate', 6:'Bit Rate',
             7:'Channels', 8:'Duration', 9:'Title', 10:'Artist', 11:'Album', 12:'Album Artist',
