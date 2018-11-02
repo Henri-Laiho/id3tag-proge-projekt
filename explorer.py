@@ -30,6 +30,7 @@ editing = False
 current_dir = os.getcwd().replace('\\', '/') + '/'
 last_dir = ''
 path_prefix = current_dir[0] + ':/'
+last_prefix = ''
 current_dir = current_dir[2:]
 message = ''
 dir = []
@@ -140,7 +141,7 @@ while True:
     print()
     
     # andmete uuendamine
-    if last_dir != current_dir:
+    if last_dir != current_dir or last_prefix != path_prefix:
         try:
             dir = [list_entry(Directory=('DIR' if file.is_dir else 'F  '),
                               Name=file.name,
@@ -151,7 +152,10 @@ while True:
             for i in range(len(dir)):
                 file = dir[i]
                 if file[0] != 'DIR':
-                    audio = mutagen.File(path_prefix + current_dir + file[1])
+                    try:
+                        audio = mutagen.File(path_prefix + current_dir + file[1])
+                    except mutagen.MutagenError:
+                        continue
                     if audio != None:
                         if hasattr(audio.info, 'bitrate') and audio.info.bitrate: file[6] = metric_prefix(audio.info.bitrate) + 'bps'
                         if hasattr(audio.info, 'samplerate') and audio.info.samplerate: file[6] = str(audio.info.samplerate)
@@ -193,6 +197,7 @@ while True:
         dir.insert(0, list_entry(Directory='DIR', Name='..'))
     
     last_dir = current_dir
+    last_prefix = path_prefix
     # ekraanil nähtavad read
     for i in range(view_position, min(view_position + view_lines, len(dir))):
         if cursor_line == i: print('\33[7m', end='')
@@ -218,6 +223,7 @@ while True:
         elif ch in b_drives: # Kõvaketta vahetus
             home_fs = open_fs(ch.decode() + ':/')
             current_dir = '/'
+            last_prefix = path_prefix
             path_prefix = ch.decode() + ':/'
             cursor_line = 0
             view_position = 0
