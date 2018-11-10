@@ -38,6 +38,10 @@ cursor_line = 0   # kursori rida
 cursor_column = 0 # kursori veerg
 editing = False   # kas hetkel muudetakse mingit väärtust
 
+# konsool suuremaks
+os.system('mode con: cols='+str(sum([column_sizes[x] for x in columns_visible]) + len(columns_visible) + 8)+
+          ' lines=' + str(view_lines + 6))
+
 # esialgse kausta valimine
 current_dir = os.getcwd().replace('\\', '/') + '/'
 path_prefix = current_dir[0] + ':/' # sisaldab ketta nime nt 'C:/'
@@ -127,12 +131,11 @@ def enter():
         # ümbernimetamine
         if column == 1:
             try:
-                prevname = file[1]
-                newname = prefilled_input('Rename: ', prevname)
+                newname = prefilled_input('Rename: ', file[1])
                 os.rename(path_prefix + current_dir + file[1], path_prefix + current_dir + newname)
                 file[1] = newname
             except FileExistsError:
-                message= 'File with that name already exists in directory\n'
+                message = 'File with that name already exists in directory\n'
         # tag'i muutmine
         elif file[0] != 'DIR':
             # faili avamine
@@ -142,6 +145,9 @@ def enter():
                 message = "Can't edit tags"
                 return
             if audio != None:
+                if audio.tags is None:
+                    audio.add_tags()
+                    audio.save()
                 if isinstance(audio.tags, mutagen.id3.ID3):
                     audio = EasyID3(path_prefix + current_dir + file[1])
                     if audio == None:
