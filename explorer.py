@@ -24,23 +24,27 @@ column_sizes = [3, 24, 10, 16, 16, 11, 11, 8, 9, 16, 16, 10, 10, 10, 8, 5, 10, 1
 drives = get_drives()
 b_drives = [drive[0].encode() for drive in drives]
 
+# hetkel nähtaval olevad veerud, numbrid vastavad võtmetele sõnastukus 'columns'
 columns_visible = [0, 1, 2, 3, 6, 8, 9, 10, 11, 13, 15, 16, 17, 19, 20]
-sorted_by = 1
-view_lines = 32
-cursor_line = 0
-cursor_column = 0
-view_position = 0
-editing = False
+sorted_by = 1     # veeru number, mille järgi sorteeritakse failid
+view_lines = 32   # korraga ekraanil olevate ridade arv, suurem arv teeb programmi aeglasemaks
+view_position = 0 # esimese rea number, mis on ekraanil näha
+cursor_line = 0   # kursori rida
+cursor_column = 0 # kursori veerg
+editing = False   # kas hetkel muudetakse mingit väärtust
+
+# esialgse kausta valimine
 current_dir = os.getcwd().replace('\\', '/') + '/'
-last_dir = ''
-path_prefix = current_dir[0] + ':/'
+path_prefix = current_dir[0] + ':/' # sisaldab ketta nime nt 'C:/'
 last_prefix = ''
 current_dir = current_dir[2:]
-message = ''
-dir = []
+last_dir = '' # viimati avatud kaust, kui on sama, mis current_dir, siis ei hakata uuesti kausta läbi lugema
+message = '' # sõnum, mida kuvatakse esimesel real 1 kord; sobib veateadete kuvamiseks
+dir = [] # avatud kausta sisu, mida kuvatakse ekraanil
 
 home_fs = open_fs(path_prefix)
 
+# tekitab helisignaali; vaigistamiseks: bell_on = False
 bell_on = True
 def bell():
     if bell_on:
@@ -149,15 +153,18 @@ while True:
             ' '*(column_sizes[col] - len(columns[col]) + 1), end='')
     print()
     
-    # andmete uuendamine
+    # kausta sisu uuendamine
     if last_dir != current_dir or last_prefix != path_prefix:
         try:
+            # failide, alamkaustade leidmine
             dir = [list_entry(Directory=('DIR' if file.is_dir else 'F  '),
                               Name=file.name,
                               Size=('' if file.is_dir else (metric_prefix(file.size) + 'B')),
                               Modified=datetimeToStr(file.modified),
                               Created=datetimeToStr(file.created)
                               ) for file in home_fs.scandir(current_dir, namespaces=['details'])]
+            
+            # metadata, id3 tagide lugemine
             for i in range(len(dir)):
                 file = dir[i]
                 if file[0] != 'DIR':
@@ -194,19 +201,24 @@ while True:
                     current_dir = '/'
             continue
             
+        # kui mõni id3-tag on järjend, siis see tehakse sõneks eraldajatega ', ' (ainult ekraanil kuvamise jaoks)
         for i in range(len(dir)):
             for q in range(len(dir[i])):
                 if isinstance(dir[i][q], list):
                     dir[i][q] = ', '.join(dir[i][q])
         
+        # kausta sorteerimine
         if sorted_by < 2:
             dir.sort(key=lambda x: (x[0], x[1].lower()))
         else:
             dir.sort(key=lambda x: x[sorted_by].lower())
         dir.insert(0, list_entry(Directory='DIR', Name='..'))
     
+    # eelmise kausta uuendamine
     last_dir = current_dir
     last_prefix = path_prefix
+    
+    # colorama värvid
     selected = Fore.BLACK + Back.WHITE
     reset = Fore.RESET + Back.RESET
     edit = Fore.RESET + Back.YELLOW
