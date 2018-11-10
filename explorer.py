@@ -112,9 +112,10 @@ def saveInfo():
 
 # ütleb, kas praegu kursori all olev lahter on muudetav
 def isCellEditable():
-    return (columns_visible[cursor_column] == 1
+    return (cursor_line > 1 # kausta .. ei saa muuta
+            and (columns_visible[cursor_column] == 1
             or any(dir[cursor_line][1].endswith(ext) for ext in extensions)
-            and columns_visible[cursor_column] > 8)
+            and columns_visible[cursor_column] > 8))
 
 # kui kasutaja vajutab enter
 def enter():
@@ -125,11 +126,11 @@ def enter():
         column = columns_visible[cursor_column]
         # ümbernimetamine
         if column == 1:
-                        try:
-                prevname=file
-                newname=input()
-                os.rename(file[column],newname)
-                file[1]=newname
+            try:
+                prevname = file[1]
+                newname = prefilled_input('Rename: ', prevname)
+                os.rename(path_prefix + current_dir + file[1], path_prefix + current_dir + newname)
+                file[1] = newname
             except:
                 message= "File with that name already exists in directory"
         # tag'i muutmine
