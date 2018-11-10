@@ -4,10 +4,14 @@ from prefilled_input import prefilled_input
 from getch import getch # 1 täht korraga lugemine
 from fs import open_fs
 from mutagen.easyid3 import EasyID3
+from colorama import init, Fore, Back
+init()
 
 import os
 import fs
 import mutagen
+
+colors = True
 
 extensions = (".mp3", ".aac", ".flac", ".m4a", ".mka", ".mp4", ".mxmf", ".ogg", ".wav", ".webm")
 columns = { 0:'Directory', 1:'Name', 2:'Size', 3:'Modified', 4:'Created', 5:'Sample Rate', 6:'Bit Rate',
@@ -46,6 +50,7 @@ def bell():
 def list_entry(**data):
     return [data.get(y, '') for x, y in columns.items()]
 
+#kui kasutaja vajutab pageup
 def pgup():
     global cursor_line, view_position
     cursor_line -= view_lines
@@ -53,6 +58,7 @@ def pgup():
     if cursor_line < 0: cursor_line = 0
     if view_position < 0: view_position = 0
 
+#kui kasutaja vajutab pagedown
 def pgdown():
     global cursor_line, view_position
     cursor_line += view_lines
@@ -95,9 +101,11 @@ def left():
 def saveInfo():
     pass
 
+# ütleb, kas praegu kursori all olev lahter on muudetav
 def isCellEditable():
     return dir[cursor_line][7] != '' and (columns_visible[cursor_column] > 8 or columns_visible[cursor_column] == 1)
 
+#kui kasutaja vajutab enter
 def enter():
     global current_dir, cursor_line, editing, view_position
     
@@ -128,9 +136,10 @@ while True:
     if message != '':
         print(message, end='')
         message = ''
+    # väljastab hetkel avatud kausta teekonna
     print(path_prefix + current_dir)
     
-    # pealkirjad
+    # veergude pealkirjad
     print(('  ' if columns_visible[cursor_column] == 0 else '') + '    ', end='')
     for col in columns_visible[1:]:
         print(('  ' if columns_visible[cursor_column] == col else '') +
@@ -198,19 +207,36 @@ while True:
     
     last_dir = current_dir
     last_prefix = path_prefix
+    selected = Fore.BLACK + Back.WHITE
+    reset = Fore.RESET + Back.RESET
+    edit = Fore.RESET + Back.YELLOW
+    
     # ekraanil nähtavad read
-    for i in range(view_position, min(view_position + view_lines, len(dir))):
-        if cursor_line == i: print('\33[7m', end='')
-        for col in columns_visible:
-            print(((('> \33[6m' if editing else '> ') if cursor_line == i else '  ') if columns_visible[cursor_column] == col else '') +
-                  (dir[i][col] if len(dir[i][col]) < column_sizes[col] + 1 else dir[i][col][:column_sizes[col]-3]) +
-                  ('... ' if len(dir[i][col]) > column_sizes[col] else '' ) +
-                  (('\33[7m' if cursor_line == i else '\33[0m') if editing and cursor_line == i and columns_visible[cursor_column] == col else '') + # värvimuutus tagasi
-                  ' '*(column_sizes[col] - len(dir[i][col]) + 1), end='')
-        print('\33[0m')
+    if colors:
+        for i in range(view_position, min(view_position + view_lines, len(dir))):
+            if cursor_line == i: print(selected, end='')
+            for col in columns_visible:
+                print(((('> ' + edit if editing else '> ') if cursor_line == i else '  ') if columns_visible[cursor_column] == col else '') +
+                      (dir[i][col] if len(dir[i][col]) < column_sizes[col] + 1 else dir[i][col][:column_sizes[col]-3]) +
+                      ('... ' if len(dir[i][col]) > column_sizes[col] else '' ) +
+                      ((selected if cursor_line == i else reset) if editing and cursor_line == i and columns_visible[cursor_column] == col else '') + # värvimuutus tagasi
+                      ' '*(column_sizes[col] - len(dir[i][col]) + 1), end='')
+            print(reset)
+    else:
+        for i in range(view_position, min(view_position + view_lines, len(dir))):
+            #if cursor_line == i: print('\33[7m', end='')
+            for col in columns_visible:
+                print(((('> ' if editing else '> ') if cursor_line == i else '  ') if columns_visible[cursor_column] == col else '') +
+                      (dir[i][col] if len(dir[i][col]) < column_sizes[col] + 1 else dir[i][col][:column_sizes[col]-3]) +
+                      ('... ' if len(dir[i][col]) > column_sizes[col] else '' ) +
+                      (('' if cursor_line == i else '') if editing and cursor_line == i and columns_visible[cursor_column] == col else '') + # värvimuutus tagasi
+                      ' '*(column_sizes[col] - len(dir[i][col]) + 1), end='')
+            print('')
     
     # sisend
     ch = getch()
+    # windowsis kui kasutaja vajutab ebatavalisi klahve siis getch() saab märgi b'\xe0' ja
+    # järgmine kord kui getch() kutsutakse saab ebatavalise klahvi märgi
     special_ch = ch == b'\xe0'
     if special_ch:
         print(ch, end='')
@@ -257,7 +283,7 @@ while True:
             view_position = 0
         elif ch == b'\r':
             enter()
-        message += 'Col='+str(cursor_column)+'; '+str(columns_visible)+'\n'
+        #message += 'Col='+str(cursor_column)+'; '+str(columns_visible)+'\n'
 
 
 
