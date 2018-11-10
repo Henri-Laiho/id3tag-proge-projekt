@@ -16,8 +16,13 @@ colors = True
 extensions = (".mp3", ".aac", ".flac", ".m4a", ".mka", ".mp4", ".mxmf", ".ogg", ".wav", ".webm")
 columns = { 0:'Directory', 1:'Name', 2:'Size', 3:'Modified', 4:'Created', 5:'Sample Rate', 6:'Bit Rate',
             7:'Channels', 8:'Duration', 9:'Title', 10:'Artist', 11:'Album', 12:'Album Artist',
-            13:'Contributing Artists', 14:'Track Number', 15:'Year', 16:'Genre', 17:'Composer', 18:'Writer',
+            13:'Genre', 14:'Track Number', 15:'Year', 16:'Conductors', 17:'Composer', 18:'Writer',
             19:'Key', 20:'BPM' }
+mutagen_names = { 0:'', 1:'', 2:'', 3:'', 4:'', 5:'samplerate', 6:'bitrate',
+            7:'channels', 8:'duration', 9:'title', 10:'artist', 11:'album', 12:'albumartist',
+            13:'genre', 14:'tracknumber', 15:'date', 16:'conductor', 17:'composer', 18:'writer',
+            19:'key', 20:'bpm' }
+# veergude laiused tähemärkides
 #               0   1   2   3   4   5   6  7  8   9  10  11  12  13 14 15  16  17  18 19 20
 column_sizes = [3, 24, 10, 16, 16, 11, 11, 8, 9, 16, 16, 10, 10, 10, 8, 5, 10, 10, 10, 4, 4]
 
@@ -54,7 +59,7 @@ def bell():
 def list_entry(**data):
     return [data.get(y, '') for x, y in columns.items()]
 
-#kui kasutaja vajutab pageup
+# kui kasutaja vajutab pageup
 def pgup():
     global cursor_line, view_position
     cursor_line -= view_lines
@@ -62,7 +67,7 @@ def pgup():
     if cursor_line < 0: cursor_line = 0
     if view_position < 0: view_position = 0
 
-#kui kasutaja vajutab pagedown
+# kui kasutaja vajutab pagedown
 def pgdown():
     global cursor_line, view_position
     cursor_line += view_lines
@@ -70,7 +75,7 @@ def pgdown():
     if cursor_line >= len(dir)-1: cursor_line = len(dir)-2
     if view_position + view_lines >= len(dir)-1: view_position = len(dir)-1-view_lines
 
-#kui kasutaja vajutab nool üles
+# kui kasutaja vajutab nool üles
 def up():
     global cursor_line, view_position
     if cursor_line > 0:
@@ -80,7 +85,7 @@ def up():
     else:
         bell()
 
-#kui kasutaja vajutab nool alla
+# kui kasutaja vajutab nool alla
 def down():
     global cursor_line, view_position
     if cursor_line < len(dir)-1:
@@ -90,13 +95,13 @@ def down():
     else:
         bell()
 
-#kui kasutaja vajutab nool paremale
+# kui kasutaja vajutab nool paremale
 def right():
     global cursor_column
     if cursor_column < len(columns_visible)-1:
         cursor_column += 1
 
-#kui kasutaja vajutab nool vasakule
+# kui kasutaja vajutab nool vasakule
 def left():
     global cursor_column
     if cursor_column > 0:
@@ -107,18 +112,47 @@ def saveInfo():
 
 # ütleb, kas praegu kursori all olev lahter on muudetav
 def isCellEditable():
-    return dir[cursor_line][7] != '' and (columns_visible[cursor_column] > 8 or columns_visible[cursor_column] == 1)
+    return (columns_visible[cursor_column] == 1
+            or any(dir[cursor_line][1].endswith(ext) for ext in extensions)
+            and columns_visible[cursor_column] > 8)
 
-#kui kasutaja vajutab enter
+# kui kasutaja vajutab enter
 def enter():
-    global current_dir, cursor_line, editing, view_position
+    global current_dir, cursor_line, view_position, dir
     
-    if editing:
-        
-        
-        
-        saveInfo()
-        editing = False
+    if isCellEditable():
+        file = dir[cursor_line]
+        column = columns_visible[cursor_column]
+        # ümbernimetamine
+        if column == 1:
+            pass
+        # tag'i muutmine
+        elif file[0] != 'DIR':
+            # faili avamine
+            try:
+                audio = mutagen.File(path_prefix + current_dir + file[1])
+            except mutagen.MutagenError:
+                message = "Can't edit tags"
+                return
+            if audio != None:
+                if isinstance(audio.tags, mutagen.id3.ID3):
+                    audio = EasyID3(path_prefix + current_dir + file[1])
+                    if audio == None:
+                        message = 'ID3 error\n'
+                        return
+                    
+                # andmete sisestamine
+                audio[mutagen_names[column]] = [x.strip() for x in
+                                                prefilled_input(columns[column] + ': ',
+                                                               '; '.join(audio[mutagen_names[column]])
+                                                               if mutagen_names[column] in audio
+                                                               else '').split(';')
+                                                ]
+                file[column] = audio[mutagen_names[column]]
+                if isinstance(file[column], list):
+                    file[column] = '; '.join(file[column])
+                # andmete salvestamine
+                audio.save()
     else:
         if dir[cursor_line][0] == 'DIR':
             if cursor_line == 0:
@@ -180,18 +214,22 @@ while True:
                             audio = EasyID3(path_prefix + current_dir + file[1])
                             if audio == None:
                                 continue
-                        if 'title' in audio: file[9] = audio['title']
-                        if 'artist' in audio: file[10] = audio['artist']
-                        if 'album' in audio: file[11] = audio['album']
-                        if 'albumartist' in audio: file[12] = audio['albumartist']
-                        if 'contributingartists' in audio: file[13] = audio['contributingartists']
-                        if 'tracknumber' in audio: file[14] = audio['tracknumber']
-                        if 'date' in audio: file[15] = audio['date']
-                        if 'genre' in audio: file[16] = audio['genre']
-                        if 'composer' in audio: file[17] = audio['composer']
-                        if 'writer' in audio: file[18] = audio['writer']
-                        if 'key' in audio: file[19] = audio['key']
-                        if 'bpm' in audio: file[20] = audio['bpm']
+                            
+                        for q in range(9, 21):
+                            if mutagen_names[q] in audio:
+                               file[q] = audio[mutagen_names[q]]
+                        #if 'title' in audio: file[9] = audio['title']
+                        #if 'artist' in audio: file[10] = audio['artist']
+                        #if 'album' in audio: file[11] = audio['album']
+                        #if 'albumartist' in audio: file[12] = audio['albumartist']
+                        #if 'contributingartists' in audio: file[13] = audio['contributingartists']
+                        #if 'tracknumber' in audio: file[14] = audio['tracknumber']
+                        #if 'date' in audio: file[15] = audio['date']
+                        #if 'genre' in audio: file[16] = audio['genre']
+                        #if 'composer' in audio: file[17] = audio['composer']
+                        #if 'writer' in audio: file[18] = audio['writer']
+                        #if 'key' in audio: file[19] = audio['key']
+                        #if 'bpm' in audio: file[20] = audio['bpm']
                         
                 
         except (PermissionError, fs.errors.DirectoryExpected):
@@ -201,11 +239,11 @@ while True:
                     current_dir = '/'
             continue
             
-        # kui mõni id3-tag on järjend, siis see tehakse sõneks eraldajatega ', ' (ainult ekraanil kuvamise jaoks)
+        # kui mõni id3-tag on järjend, siis see tehakse sõneks eraldajatega '; ' (ainult ekraanil kuvamise jaoks)
         for i in range(len(dir)):
             for q in range(len(dir[i])):
                 if isinstance(dir[i][q], list):
-                    dir[i][q] = ', '.join(dir[i][q])
+                    dir[i][q] = '; '.join(dir[i][q])
         
         # kausta sorteerimine
         if sorted_by < 2:
@@ -247,8 +285,8 @@ while True:
     
     # sisend
     ch = getch()
-    # windowsis kui kasutaja vajutab ebatavalisi klahve siis getch() saab märgi b'\xe0' ja
-    # järgmine kord kui getch() kutsutakse saab ebatavalise klahvi märgi
+    # windowsis kui kasutaja vajutab ebatavalisi klahve siis getch() tagastab märgi b'\xe0' ja
+    # järgmine kord kui getch() kutsutakse siis tagastab ebatavalise klahvi märgi
     special_ch = ch == b'\xe0'
     if special_ch:
         print(ch, end='')
