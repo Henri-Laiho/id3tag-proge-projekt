@@ -111,9 +111,9 @@ def isCellEditable():
 
 #kui kasutaja vajutab enter
 def enter():
-    global current_dir, cursor_line, editing, view_position
-    
-    if editing:
+    global current_dir, cursor_line, editing, view_position, dir
+            input()
+            if isCellEditable():
         
         
         
