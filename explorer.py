@@ -119,7 +119,7 @@ def isCellEditable():
 
 # kui kasutaja vajutab enter
 def enter():
-    global current_dir, cursor_line, view_position, dir
+    global current_dir, cursor_line, view_position, dir, message
     
     if isCellEditable():
         file = dir[cursor_line]
@@ -131,8 +131,8 @@ def enter():
                 newname = prefilled_input('Rename: ', prevname)
                 os.rename(path_prefix + current_dir + file[1], path_prefix + current_dir + newname)
                 file[1] = newname
-            except:
-                message= "File with that name already exists in directory"
+            except FileExistsError:
+                message= 'File with that name already exists in directory\n'
         # tag'i muutmine
         elif file[0] != 'DIR':
             # faili avamine
