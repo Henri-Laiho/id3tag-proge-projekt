@@ -126,9 +126,9 @@ def enter():
         # ümbernimetamine
         if column == 1:
                         try:
-                prevname=file
+                prevname=file[1]
                 newname=input()
-                os.rename(file[column],newname)
+                os.rename(path_prefix + current_dir + file[column],newname)
                 file[1]=newname
             except:
                 message= "File with that name already exists in directory"
