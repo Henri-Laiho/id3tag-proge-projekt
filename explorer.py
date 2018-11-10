@@ -125,7 +125,13 @@ def enter():
         column = columns_visible[cursor_column]
         # ümbernimetamine
         if column == 1:
-            pass
+                        try:
+                prevname=file
+                newname=input()
+                os.rename(file[column],newname)
+                file[1]=newname
+            except:
+                message= "File with that name already exists in directory"
         # tag'i muutmine
         elif file[0] != 'DIR':
             # faili avamine
