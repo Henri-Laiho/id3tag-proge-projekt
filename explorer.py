@@ -6,7 +6,7 @@ from fs import open_fs
 from mutagen.easyid3 import EasyID3
 from colorama import init, Fore, Back
 init()
-
+import easygui
 import os
 import fs
 import mutagen
@@ -336,6 +336,8 @@ while True:
                 columns_visible.pop(cursor_column)
                 if cursor_column >= len(columns_visible):
                     cursor_column = len(columns_visible)-1
+        elif ch==b"i":
+            easygui.msgbox("Siia tuleb list keybindidest", title="Abi")
         elif ch == b'\x1b': # esc
             pass
         elif ch == b'\x08': # backspace
