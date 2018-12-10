@@ -181,9 +181,11 @@ def enter():
         elif any([dir[cursor_line][1].endswith(x, -6) for x in extensions]):
             play(path_prefix + current_dir + dir[cursor_line][1])
             
-    
+  
 while True:
     cls() # tühjendab ekraani
+
+    print("\n\n\nPress i for help \n\n\n")
     if message != '':
         print(message, end='')
         message = ''
@@ -295,17 +297,17 @@ while True:
                       (('' if cursor_line == i else '') if editing and cursor_line == i and columns_visible[cursor_column] == col else '') + # värvimuutus tagasi
                       ' '*(column_sizes[col] - len(dir[i][col]) + 1), end='')
             print('')
+
+
     
     # sisend
-    ch = getch()
     # windowsis kui kasutaja vajutab ebatavalisi klahve siis getch() tagastab märgi b'\xe0' ja
     # järgmine kord kui getch() kutsutakse siis tagastab ebatavalise klahvi märgi
+    ch=getch()
     special_ch = ch == b'\xe0'
     if special_ch:
-        print(ch, end='')
         ch = getch()
     if ch:
-        print(ch, end='')
         print()
         if ch == b'q':
             break
@@ -336,8 +338,7 @@ while True:
                 columns_visible.pop(cursor_column)
                 if cursor_column >= len(columns_visible):
                     cursor_column = len(columns_visible)-1
-        elif ch==b"i":
-            easygui.msgbox("Siia tuleb list keybindidest", title="Abi")
+
         elif ch == b'\x1b': # esc
             pass
         elif ch == b'\x08': # backspace
@@ -348,6 +349,18 @@ while True:
             view_position = 0
         elif ch == b'\r':
             enter()
+            ch=getch()
+        elif ch==b"i":
+            print("Liiguta kursorit nooltega")
+            print("Liiguta kursor kausta peale ja vajuta enterir, et sellesse siseneda")
+            print("Vajuta backspace, et kaustast väljuda")
+            print("Liiguta kursor faili tagi peale ja vajuta enterit, et tage muuta")
+            print("Vii kursor tagide peale ja vajuta - või + et neid eemaldada või lisada")
+            print("Vajuta enterit muusikafaili peal, et seda seda käima panna")
+            print("Suur kõvaketta täht vahetab loetavat ketast")
+            print("Vajuta q et programmist väljuda")
+            print("Vajuta enterit et info sulgeda")
+            input()
         #message += 'Col='+str(cursor_column)+'; '+str(columns_visible)+'\n'
 
 
