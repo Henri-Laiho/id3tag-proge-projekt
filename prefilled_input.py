@@ -1,6 +1,4 @@
 class _Pf_input:
-    """Gets a single character from standard input.  Does not echo to the
-screen."""
     
     def __init__(self):
         try:

@@ -1,6 +1,6 @@
 fs
-pydub
 mutagen
+colorama
 
 Windows:
 pywin32
