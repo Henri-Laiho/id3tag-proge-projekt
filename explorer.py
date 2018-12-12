@@ -57,7 +57,7 @@ except FileNotFoundError:
 
 # konsool suuremaks
 os.system('mode con: cols='+str(sum([column_sizes[x] for x in columns_visible]) + len(columns_visible) + 8)+
-          ' lines=' + str(view_lines + 8))
+          ' lines=' + str(view_lines + 10))
 
 # esialgse kausta valimine
 current_dir = os.getcwd().replace('\\', '/') + '/'
@@ -218,7 +218,6 @@ def savedata():
     for i in genres.values():
         file.write(i+'\n')
     
-    
 def main():
     global message, column, columns, column_sizes, last_dir, current_dir
     global last_prefix, path_prefix, mutagen_names, colors, b_drives
@@ -227,6 +226,8 @@ def main():
     
     while True:
         cls() # tühjendab ekraani
+        
+        print("\n Press i for help \n")
         if message != '':
             print(message, end='')
             message = ''
@@ -389,6 +390,17 @@ def main():
                 view_position = 0
             elif ch == b'\r':
                 enter()
+            elif ch == b"i":
+                print("Liiguta kursorit nooltega")
+                print("Liiguta kursor kausta peale ja vajuta enterit, et sellesse siseneda")
+                print("Vajuta backspace, et kaustast väljuda")
+                print("Liiguta kursor faili tagi peale ja vajuta enterit, et tage muuta")
+                print("Vii kursor veeru peale ja vajuta - või + et neid peita või näha")
+                print("Vajuta enterit muusikafaili peal, et seda seda käima panna")
+                print("Suur kõvaketta täht + : vahetab loetavat ketast nt 'C:', 'D:'")
+                print("Vajuta q et programmist väljuda")
+                print("Vajuta enterit et info sulgeda")
+                input()
             
             #message += 'Col='+str(cursor_column)+'; '+str(columns_visible)+'\n'
 
